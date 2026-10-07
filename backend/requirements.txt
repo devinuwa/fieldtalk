@@ -1,0 +1,13 @@
+# Pinned to versions verified on 2026-10-07 against PyPI metadata for the Python used
+# here (3.11.1 in backend/.venv; see docs/PROVENANCE.md and the README).
+#
+# Install:
+#     py -3.11 -m venv backend/.venv
+#     backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
+
+fastapi==0.142.2
+uvicorn==0.54.0
+pytest==9.1.1
+
+# Speech to text. Deferred until T1 (the first run also downloads the model weights).
+faster-whisper==1.2.1

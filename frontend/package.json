@@ -1,0 +1,30 @@
+{
+  "name": "fieldtalk-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "FieldTalk UI: record/upload notes, review grounded entries, ask your notes, printable weekly report. Offline, local only.",
+  "scripts": {
+    "dev": "cross-env NEXT_TELEMETRY_DISABLED=1 next dev -p 3000",
+    "build": "cross-env NEXT_TELEMETRY_DISABLED=1 next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sync:fixtures": "node scripts/sync-fixtures.mjs",
+    "serve:out": "node scripts/serve-out.mjs"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "cross-env": "10.1.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vitest": "5.0.3"
+  }
+}

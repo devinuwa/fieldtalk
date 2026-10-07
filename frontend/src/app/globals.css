@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* Tokens and base styles. System fonts only: nothing is fetched at runtime. */
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+
+  --color-ink: #16211c;
+  --color-ink-soft: #4a5a52;
+  --color-leaf: #17603a;
+  --color-leaf-soft: #e8f3ec;
+  --color-soil: #7a5b33;
+  --color-soil-soft: #f6efe4;
+  --color-alert: #9a2c0f;
+  --color-alert-soft: #fdece7;
+  --color-sky: #1d4f91;
+  --color-sky-soft: #e8f0fa;
+  --color-plum: #6a3d8f;
+  --color-plum-soft: #f2ebf8;
+  --color-slate-line: #d5dcd8;
+}
+
+@layer base {
+  html {
+    /* Large text: readable at arm's length, outdoors. */
+    font-size: 18px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: #fbfcfb;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  /* Bigger hit targets for a gloved thumb in the field. */
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-leaf);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .card {
+    border: 1px solid var(--color-slate-line);
+    border-radius: 0.75rem;
+    background: #fff;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    margin-bottom: 0.15rem;
+  }
+
+  .input {
+    width: 100%;
+    border: 1px solid var(--color-slate-line);
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0.5rem 0.6rem;
+    color: var(--color-ink);
+  }
+}
+
+/* Print: the weekly report goes on paper. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  html {
+    font-size: 11pt;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .card {
+    border-color: #666;
+    break-inside: avoid;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+
+  .print-page-break {
+    break-before: page;
+  }
+
+  /* Never print link targets or the interactive highlight ring. */
+  a[href]::after {
+    content: "";
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+}

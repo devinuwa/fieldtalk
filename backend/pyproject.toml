@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Import `fieldtalk` from the backend directory without installing the package.
+pythonpath = ["."]
+addopts = "-ra"

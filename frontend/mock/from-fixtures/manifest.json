@@ -1,0 +1,19 @@
+{
+  "generated_by": "frontend/scripts/sync-fixtures.mjs",
+  "note": "Local read-only copies of repo fixtures so the frontend mock layer can import them. Never edit here; edit the source in fixtures/ or eval/ and re-run npm run sync:fixtures.",
+  "sources": [
+    {
+      "source": "fixtures/golden_engine.json",
+      "copy": "frontend/mock/from-fixtures/golden_engine.json",
+      "sha256": "fd7db75eed1680e7bf9178d14310a37de04fa40040ff7b084dfce3b11a5112e5",
+      "bytes": 1797
+    },
+    {
+      "source": "eval/transcripts.jsonl",
+      "copy": "frontend/mock/from-fixtures/transcripts.jsonl",
+      "sha256": "bc56763051a26720c6d485776946df4f6f518d9c69f677fb3fb82d9b4e11d09f",
+      "bytes": 3030
+    }
+  ],
+  "rows": 12
+}

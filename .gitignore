@@ -1,0 +1,40 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Node / frontend build output
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Local data: recordings are personal data, never committed (AGENTS.md rule 6)
+data/
+
+# Environment / secrets
+.env
+.env.*
+
+# Logs
+*.log
+
+# Audio outside fixtures/ (recordings are personal data).
+# fixtures/ and eval/ keep their synthetic files; the negations below are explicit.
+*.wav
+*.m4a
+*.mp3
+!fixtures/**/*.wav
+!fixtures/**/*.m4a
+!fixtures/**/*.mp3
+
+# Local agent/tool state (not project content)
+.freebuff/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
