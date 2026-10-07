@@ -23,13 +23,12 @@ data/
 *.log
 
 # Audio outside fixtures/ (recordings are personal data).
-# fixtures/ and eval/ keep their synthetic files; the negations below are explicit.
+# fixtures/ and eval/ keep their synthetic files, so they are re-included wholesale.
 *.wav
 *.m4a
 *.mp3
-!fixtures/**/*.wav
-!fixtures/**/*.m4a
-!fixtures/**/*.mp3
+!fixtures/**
+!eval/**
 
 # Local agent/tool state (not project content)
 .freebuff/
