@@ -33,11 +33,16 @@ export interface Quantity {
 
 /** One extracted entry exactly as it comes out of the extraction pipeline. */
 export interface Extraction {
+  /** Always null for extraction previews; approved rows are stored after review. */
+  id?: string | null;
   plot: string | null;
   crop: string | null;
   kind: EntryKind;
   /** Short phrase copied or lightly trimmed from the transcript. */
   text: string;
+  /** Code-resolved dates returned with the preview and preserved on approval. */
+  date?: string;
+  planting_date?: string | null;
   date_expr: DateExprOrNull;
   planting_date_expr: DateExprOrNull;
   quantity: Quantity | null;
@@ -49,6 +54,11 @@ export interface ExtractionResult {
   entries: Extraction[];
   action: ExtractionAction;
   clarify_question: string | null;
+  /**
+   * True when extraction wrote entries directly to the store. Current clients return
+   * previews, so approval is always required.
+   */
+  persisted_by_extraction?: boolean;
 }
 
 /** Fields that must be traceable to the transcript (V1). */
@@ -115,6 +125,8 @@ export interface SttResult {
   wall_seconds: number;
   /** Real-time factor = wall_seconds / audio_seconds. null in mock mode: no audio was decoded. */
   rtf: number | null;
+  /** Language the engine detected in the audio; English only in this app. */
+  language: string | null;
   model: string;
   synthetic: boolean;
 }
@@ -133,6 +145,11 @@ export interface Health {
   model: "ok" | "unavailable";
   model_name: string;
   stt_name: string;
+  /** Why speech-to-text is unavailable and what to run to fix it. */
+  stt_detail: string;
+  /** Why the local model is unavailable and what to run to fix it. */
+  model_detail: string;
+  /** Both details in one line, for the compact status strip. */
   detail: string;
 }
 

@@ -9,5 +9,7 @@ fastapi==0.142.2
 uvicorn==0.54.0
 pytest==9.1.1
 
-# Speech to text. Deferred until T1 (the first run also downloads the model weights).
+# Speech to text. Wired into POST /api/transcribe (CPU, int8). The model weights are
+# downloaded once at setup by backend/scripts/stt_download.py and loaded with
+# local_files_only=True, so a recording never triggers a download.
 faster-whisper==1.2.1

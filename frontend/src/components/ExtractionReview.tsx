@@ -5,78 +5,76 @@ import { useState } from "react";
 import { KindBadge } from "@/components/KindBadge";
 import { SyntheticBadge } from "@/components/SyntheticBadge";
 import { describeDateExpr, describeQuantity } from "@/lib/format";
-import { useApp } from "@/lib/store";
-import type { ExtractionResult } from "@/lib/types";
+import type { Extraction, ExtractionResult } from "@/lib/types";
 
 interface Props {
   result: ExtractionResult;
   transcript: string;
   /** Recording date used by the backend to resolve date expressions. */
   recordedAt: string;
+  /** Confirm a row when a client has already persisted it during extraction. */
+  onConfirm: (id: string) => Promise<void>;
+  /** Store an extraction preview after the user approves it. */
+  onStore: (entry: Extraction, transcript: string, recordedAt: string) => Promise<void>;
+  /** Drop a stored entry the user chose not to keep. */
+  onRemove: (id: string) => Promise<void>;
   onSaved: (count: number) => void;
 }
 
 /**
- * Everything the extraction produced, shown for review. Nothing is stored until the
- * human says so; the grounding flags come from the backend's V1 gate.
+ * Everything the extraction produced, shown for review. Each row is stored or confirmed
+ * through the entries API when you press the button: nothing here is a pretend save.
+ *
+ * Extraction rows are previews. They are written through the entries API only after the
+ * user approves them. The removal path remains for clients that pre-persist rows.
  */
-export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Props) {
-  const { addEntry } = useApp();
+export function ExtractionReview({ result, transcript, recordedAt, onConfirm, onStore, onRemove, onSaved }: Props) {
   const [included, setIncluded] = useState<boolean[]>(() => result.entries.map(() => true));
   const [saving, setSaving] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   async function save() {
     setSaving(true);
     setNote(null);
-    let count = 0;
-    for (const [index, entry] of result.entries.entries()) {
-      if (!included[index]) continue;
-      await addEntry({
-        plot: entry.plot,
-        crop: entry.crop,
-        kind: entry.kind,
-        text: entry.text,
-        date: null,
-        date_expr: entry.date_expr,
-        planting_date: null,
-        planting_date_expr: entry.planting_date_expr,
-        quantity: entry.quantity,
-        recorded_at: recordedAt,
-        // The backend's V1 gate decides these; mock mode reports copied fields as traceable.
-        grounded: {
-          plot: true,
-          crop: true,
-          kind: true,
-          text: true,
-          quantity: true,
-          date: true,
-          planting_date: true,
-        },
-        source_span: transcript,
-        confirmed: false,
-      });
-      count += 1;
+    setFailed(false);
+    let stored = 0;
+    let removed = 0;
+    try {
+      for (const [index, entry] of result.entries.entries()) {
+        if (included[index]) {
+          if (entry.id) await onConfirm(entry.id);
+          else await onStore(entry, transcript, recordedAt);
+          stored += 1;
+        } else if (entry.id) {
+          await onRemove(entry.id);
+          removed += 1;
+        }
+      }
+      setNote(
+        stored === 0
+          ? `Nothing was kept${removed > 0 ? `; ${removed} extraction${removed === 1 ? "" : "s"} removed` : ""}, so nothing was stored.`
+          : `${stored} ${stored === 1 ? "entry" : "entries"} stored as “needs review”${removed > 0 ? `, ${removed} removed` : ""}. Open Entries to edit and confirm.`,
+      );
+      onSaved(stored);
+    } catch (cause) {
+      setFailed(true);
+      setNote(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setNote(
-      count === 0
-        ? "Nothing selected, so nothing was stored."
-        : `${count} ${count === 1 ? "entry" : "entries"} stored as “needs review”.`,
-    );
-    onSaved(count);
   }
 
   if (result.entries.length === 0) {
     return (
-      <p className="rounded-lg border border-slate-line bg-white px-3 py-2 text-sm text-ink-soft">
+      <p className="rounded-lg border border-slate-line bg-surface-2 px-3 py-2 text-sm text-ink-soft">
         The extraction returned no entries.
       </p>
     );
   }
 
   return (
-    <section className="mt-4">
+    <section className="mt-4" data-testid="extraction-review">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-lg font-bold">
           {result.entries.length} {result.entries.length === 1 ? "entry" : "entries"} extracted
@@ -84,8 +82,8 @@ export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Pr
         <SyntheticBadge compact />
       </div>
       <p className="mt-1 text-sm text-ink-soft">
-        Dates are shown as the words in the note. Code resolves them to a calendar date when the
-        entry is stored.
+        Dates are shown as the words in the note. Code-resolved dates are preserved when you
+        store an approved row. Unticking a row keeps it out of the notebook.
       </p>
 
       <ul className="mt-3 space-y-3">
@@ -95,7 +93,7 @@ export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Pr
               <input
                 id={`include-${index}`}
                 type="checkbox"
-                className="h-5 w-5"
+                className="h-5 w-5 accent-[var(--color-leaf)]"
                 checked={included[index]}
                 onChange={(event) =>
                   setIncluded((current) =>
@@ -106,7 +104,7 @@ export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Pr
                 }
               />
               <label htmlFor={`include-${index}`} className="text-sm font-semibold">
-                store this
+                keep this
               </label>
               <KindBadge kind={entry.kind} />
               <span className="text-sm font-semibold">{entry.plot ?? "no plot"}</span>
@@ -130,7 +128,7 @@ export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Pr
           type="button"
           onClick={() => void save()}
           disabled={saving}
-          className="rounded-lg bg-leaf px-4 py-2 font-semibold text-white disabled:opacity-50"
+          className="rounded-lg bg-leaf px-4 py-2 font-semibold text-on-accent disabled:opacity-50"
         >
           {saving ? "Storing…" : "Store selected entries"}
         </button>
@@ -138,7 +136,11 @@ export function ExtractionReview({ result, transcript, recordedAt, onSaved }: Pr
           Entries land in the list as “needs review” so you can edit any field.
         </span>
       </div>
-      {note !== null ? <p className="mt-2 text-sm font-semibold text-leaf">{note}</p> : null}
+      {note !== null ? (
+        <p className={`mt-2 text-sm font-semibold ${failed ? "text-alert" : "text-leaf"}`} data-testid="extraction-note">
+          {note}
+        </p>
+      ) : null}
     </section>
   );
 }

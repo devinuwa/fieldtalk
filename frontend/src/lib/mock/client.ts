@@ -26,6 +26,8 @@ export interface MockOptions {
   today: string;
   /** Start with the model offline to exercise the manual path. */
   modelOffline?: boolean;
+  /** Start with speech-to-text unavailable to exercise the readiness indicator. */
+  sttOffline?: boolean;
 }
 
 function delay(ms: number): Promise<void> {
@@ -39,11 +41,16 @@ function normalize(text: string): string {
 /** Gold fields -> closed-schema extractions, the way the real pipeline would. */
 export function extractionFromGold(row: EvalTranscript): ExtractionResult {
   if (row.gold.action === "refuse") {
-    return { entries: [], action: "refuse", clarify_question: null };
+    return { entries: [], action: "refuse", clarify_question: null, persisted_by_extraction: false };
   }
   const kinds = row.gold.kinds ?? [];
   if (row.gold.action === "clarify" || kinds.length === 0) {
-    return { entries: [], action: "clarify", clarify_question: row.note ?? CLARIFY_FALLBACK };
+    return {
+      entries: [],
+      action: "clarify",
+      clarify_question: row.note ?? CLARIFY_FALLBACK,
+      persisted_by_extraction: false,
+    };
   }
   const entries: Extraction[] = kinds.map((kind) => ({
     plot: row.gold.plot ?? null,
@@ -55,7 +62,9 @@ export function extractionFromGold(row: EvalTranscript): ExtractionResult {
     planting_date_expr: row.gold.planting_date_expr ?? null,
     quantity: row.gold.quantity ?? null,
   }));
-  return { entries, action: "run", clarify_question: null };
+  // No backend store in mock mode: the review writes the confirmed entries through the
+  // same addEntry path the real client uses, so nothing pretends to be persisted.
+  return { entries, action: "run", clarify_question: null, persisted_by_extraction: false };
 }
 
 export class MockFieldTalkClient implements FieldTalkClient {
@@ -68,8 +77,9 @@ export class MockFieldTalkClient implements FieldTalkClient {
   constructor(options: MockOptions) {
     this.today = options.today;
     this.entries = SEED_ENTRIES.map((entry) => ({ ...entry }));
-    // Model on by default; either the option or the env flag switches it off.
+    // Both on by default; either the option or the env flag switches them off.
     this.modelAvailable = !(options.modelOffline === true || process.env.NEXT_PUBLIC_MODEL_OFFLINE === "1");
+    this.sttAvailable = !(options.sttOffline === true || process.env.NEXT_PUBLIC_STT_OFFLINE === "1");
   }
 
   /** The UI banner toggle: swap the model in and out without a reload. */
@@ -77,8 +87,17 @@ export class MockFieldTalkClient implements FieldTalkClient {
     this.modelAvailable = available;
   }
 
+  /** Same for speech-to-text: the readiness indicator can be exercised in mock mode. */
+  setSttAvailable(available: boolean): void {
+    this.sttAvailable = available;
+  }
+
   isModelAvailable(): boolean {
     return this.modelAvailable;
+  }
+
+  isSttAvailable(): boolean {
+    return this.sttAvailable;
   }
 
   async health(): Promise<Health> {
@@ -87,6 +106,12 @@ export class MockFieldTalkClient implements FieldTalkClient {
       model: this.modelAvailable ? "ok" : "unavailable",
       model_name: MOCK_MODEL_NAME,
       stt_name: MOCK_STT_MODEL,
+      stt_detail: this.sttAvailable
+        ? "Mock mode: no audio is decoded and no speech model runs."
+        : "Mock mode with speech-to-text switched off: upload still shows a synthetic transcript.",
+      model_detail: this.modelAvailable
+        ? "Mock mode: a keyword router stands in for the local model."
+        : "Mock mode with the model switched off: manual entry path.",
       detail: this.modelAvailable
         ? "Mock mode: the UI is driven by the bundled fixtures, not by a model."
         : "Mock mode with the model switched off: manual entry path.",
@@ -94,7 +119,15 @@ export class MockFieldTalkClient implements FieldTalkClient {
   }
 
   async transcribe(input: SttInput): Promise<SttResult> {
-    if (!this.sttAvailable) throw new SttUnavailableError();
+    if (!this.sttAvailable) {
+      throw new SttUnavailableError(
+        "Speech-to-text is switched off in mock mode. Start the local backend for a real transcript.",
+      );
+    }
+    if (input.file.size === 0) {
+      // Mirrors the real endpoint: a failed recording is never a successful note.
+      throw new ApiError(400, "the recording is empty: nothing was captured.");
+    }
     const row =
       (input.mockTranscriptId ? transcriptById(input.mockTranscriptId) : undefined) ??
       transcriptForFileName(input.name, input.file.size);
@@ -107,6 +140,7 @@ export class MockFieldTalkClient implements FieldTalkClient {
       wall_seconds: Number(wall.toFixed(2)),
       // Honest: no audio was decoded, so there is no real-time factor to report.
       rtf: null,
+      language: null,
       model: MOCK_STT_MODEL,
       synthetic: true,
     };
@@ -120,6 +154,7 @@ export class MockFieldTalkClient implements FieldTalkClient {
     return {
       entries: [],
       action: "clarify",
+      persisted_by_extraction: false,
       clarify_question:
         "Mock extraction only knows the bundled synthetic transcripts (T01-T10, X01, X02). Start the backend to run the local model on your own words.",
     };

@@ -155,7 +155,7 @@ export function ManualEntryForm() {
             <button
               type="button"
               onClick={() => void submit()}
-              className="rounded-lg bg-leaf px-4 py-2 font-semibold text-white"
+              className="rounded-lg bg-leaf px-4 py-2 font-semibold text-on-accent"
             >
               Add entry
             </button>

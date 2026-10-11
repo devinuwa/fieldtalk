@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { ModelUnavailableError } from "@/lib/errors";
+import { ApiError, ModelUnavailableError, SttUnavailableError } from "@/lib/errors";
 import { MockFieldTalkClient } from "@/lib/mock/client";
 import { SEED_ENTRIES } from "@/lib/mock/seedEntries";
 
@@ -156,5 +156,47 @@ describe("MockFieldTalkClient", () => {
     expect(summary.generated_from).toBe("engine");
     expect(summary.synthetic).toBe(true);
     expect(summary.last_note_by_plot.find((row) => row.plot === "plot three")?.days_since).toBe(2);
+  });
+
+  it("reports speech-to-text readiness and refuses to transcribe when it is off", async () => {
+    const client = new MockFieldTalkClient({ today: TODAY, sttOffline: true });
+    const health = await client.health();
+    expect(health.stt).toBe("unavailable");
+    expect(health.stt_detail).toContain("switched off");
+    expect(health.model).toBe("ok");
+
+    await expect(
+      client.transcribe({ file: new Blob(["audio"]), name: "T01.wav", audioSeconds: 4 }),
+    ).rejects.toBeInstanceOf(SttUnavailableError);
+  });
+
+  it("follows the runtime readiness toggle the UI uses", async () => {
+    const client = newClient();
+    expect((await client.health()).stt).toBe("ok");
+    client.setSttAvailable(false);
+    expect((await client.health()).stt).toBe("unavailable");
+    expect(client.isSttAvailable()).toBe(false);
+    client.setSttAvailable(true);
+    expect((await client.health()).stt).toBe("ok");
+  });
+
+  it("never turns an empty recording into a transcript", async () => {
+    const client = newClient();
+    await expect(
+      client.transcribe({ file: new Blob([]), name: "field-note.webm", audioSeconds: 0 }),
+    ).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("marks its extractions as not persisted by a backend", async () => {
+    const client = newClient();
+    const result = await client.extract({
+      transcript: "Plot one, cowpea. I weeded this morning and used two hours.",
+      recorded_at: TODAY,
+      source: "recording",
+    });
+    // The record screen stores mock extractions through addEntry, so it must not also
+    // try to confirm a row that never existed.
+    expect(result.persisted_by_extraction).toBe(false);
+    expect(result.entries[0].id).toBeUndefined();
   });
 });

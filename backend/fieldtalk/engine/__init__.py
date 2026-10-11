@@ -16,6 +16,7 @@ from .aggregate import (
 from .dates import days_since, format_iso, parse_iso, resolve_date, week_bounds
 from .models import (
     ENTRY_KINDS,
+    ENTRY_KINDS_STR,
     DateExpr,
     Entry,
     EntryKind,

@@ -1,0 +1,10 @@
+[
+  {
+    "transcript": "Onion bed, spring onions planted on March fifth. The blades are upright.",
+    "output": "{\"entries\":[{\"plot\":\"onion bed\",\"crop\":\"spring onions\",\"kind\":\"observation\",\"text\":\"The blades are upright\",\"date_expr\":{\"kind\":null,\"n\":null,\"month\":null,\"day\":null},\"planting_date_expr\":{\"kind\":\"month_day\",\"n\":null,\"month\":3,\"day\":5},\"quantity\":null}],\"action\":\"run\",\"clarify_question\":null}"
+  },
+  {
+    "transcript": "What price will fetch at the market for this harvest next month?",
+    "output": "{\"entries\":[],\"action\":\"refuse\",\"clarify_question\":null}"
+  }
+]

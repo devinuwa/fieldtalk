@@ -1,23 +1,39 @@
 @import "tailwindcss";
 
-/* Tokens and base styles. System fonts only: nothing is fetched at runtime. */
+/*
+ * Tokens and base styles. System fonts only: nothing is fetched at runtime.
+ *
+ * Dark charcoal / graphite field theme: a dim screen saves battery and is easier to read
+ * outdoors, and the emerald accent marks the recording state. Every colour here is a
+ * token, so the palette lives in one place and the print sheet can flip it back to ink
+ * on paper (see @media print at the bottom).
+ */
 @theme {
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
 
-  --color-ink: #16211c;
-  --color-ink-soft: #4a5a52;
-  --color-leaf: #17603a;
-  --color-leaf-soft: #e8f3ec;
-  --color-soil: #7a5b33;
-  --color-soil-soft: #f6efe4;
-  --color-alert: #9a2c0f;
-  --color-alert-soft: #fdece7;
-  --color-sky: #1d4f91;
-  --color-sky-soft: #e8f0fa;
-  --color-plum: #6a3d8f;
-  --color-plum-soft: #f2ebf8;
-  --color-slate-line: #d5dcd8;
+  /* Surfaces */
+  --color-page: #10161c; /* charcoal */
+  --color-surface: #18212a; /* graphite card */
+  --color-surface-2: #1e2a34; /* nested panel / input */
+  --color-slate-line: #2a3742; /* subtle border */
+
+  /* Text */
+  --color-ink: #eef4f8; /* high-contrast white */
+  --color-ink-soft: #9aabb8; /* muted grey */
+
+  /* Accent: emerald / teal, with the text colour that sits on it */
+  --color-leaf: #34d399;
+  --color-leaf-soft: #10241f;
+  --color-on-accent: #05231a;
+  --color-sky: #7cc4f8;
+  --color-sky-soft: #102433;
+  --color-plum: #c4a6f5;
+  --color-plum-soft: #221a33;
+  --color-soil: #e0a75e; /* amber: needs-a-human notice */
+  --color-soil-soft: #2a2114;
+  --color-alert: #f8937a; /* warning / refusal */
+  --color-alert-soft: #2e1a16;
 }
 
 @layer base {
@@ -25,13 +41,18 @@
     /* Large text: readable at arm's length, outdoors. */
     font-size: 18px;
     -webkit-text-size-adjust: 100%;
+    color-scheme: dark;
   }
 
   body {
-    background: #fbfcfb;
+    background: var(--color-page);
     color: var(--color-ink);
     font-family: var(--font-sans);
     line-height: 1.5;
+  }
+
+  a {
+    color: var(--color-leaf);
   }
 
   /* Bigger hit targets for a gloved thumb in the field. */
@@ -40,6 +61,10 @@
   select,
   textarea {
     font: inherit;
+  }
+
+  ::placeholder {
+    color: color-mix(in srgb, var(--color-ink-soft) 80%, transparent);
   }
 
   :focus-visible {
@@ -51,8 +76,8 @@
 @layer components {
   .card {
     border: 1px solid var(--color-slate-line);
-    border-radius: 0.75rem;
-    background: #fff;
+    border-radius: 0.85rem;
+    background: var(--color-surface);
   }
 
   .field-label {
@@ -69,8 +94,13 @@
     width: 100%;
     border: 1px solid var(--color-slate-line);
     border-radius: 0.5rem;
-    background: #fff;
+    background: var(--color-surface-2);
     padding: 0.5rem 0.6rem;
+    color: var(--color-ink);
+  }
+
+  select.input option {
+    background: var(--color-surface-2);
     color: var(--color-ink);
   }
 }
@@ -83,6 +113,28 @@
 @media print {
   @page {
     margin: 14mm;
+  }
+
+  /* Ink on paper: the dark screen palette is replaced wholesale. */
+  :root {
+    color-scheme: light;
+    --color-page: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #f4f4f4;
+    --color-slate-line: #5b5b5b;
+    --color-ink: #101010;
+    --color-ink-soft: #333333;
+    --color-leaf: #14532d;
+    --color-leaf-soft: #ffffff;
+    --color-on-accent: #ffffff;
+    --color-sky: #123a5c;
+    --color-sky-soft: #ffffff;
+    --color-plum: #3f2a66;
+    --color-plum-soft: #ffffff;
+    --color-soil: #5a421c;
+    --color-soil-soft: #ffffff;
+    --color-alert: #7a1f0d;
+    --color-alert-soft: #ffffff;
   }
 
   html {

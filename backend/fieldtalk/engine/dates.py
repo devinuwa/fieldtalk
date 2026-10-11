@@ -55,7 +55,12 @@ def resolve_date(expr: DateExpr | None, recorded_on: date) -> date | None:
             return None
         if expr.n < 0:
             return None
-        return recorded_on - timedelta(days=expr.n)
+        try:
+            return recorded_on - timedelta(days=expr.n)
+        except OverflowError:
+            # An out-of-range n (e.g. a malformed model plan) is unresolvable,
+            # never a crash: same contract as any other unresolvable expression.
+            return None
 
     if expr.kind == "month_day":
         if expr.month is None or expr.day is None:

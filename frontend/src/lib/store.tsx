@@ -59,6 +59,9 @@ interface AppState {
   deleteEntry: (id: string) => Promise<void>;
   weeklyReport: (weekOfISO: string) => Promise<WeeklySummary>;
   runAsk: (question: string, onStage?: (stage: AskStage) => void) => Promise<AskRun>;
+  /** A question handed over from the record screen, picked up by the Ask screen. */
+  pendingQuestion: string | null;
+  setPendingQuestion: (question: string | null) => void;
   today: string;
 }
 
@@ -70,6 +73,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [health, setHealth] = useState<Health | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Handed from the record screen to the Ask screen through the store: no query strings,
+  // so the static export keeps working without a Suspense boundary.
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const today = useMemo(() => todayISO(), []);
   const mock = useMemo(() => isMockMode(), []);
 
@@ -184,6 +190,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     deleteEntry,
     weeklyReport,
     runAsk,
+    pendingQuestion,
+    setPendingQuestion,
     today,
   };
 

@@ -94,7 +94,7 @@
       "week_start": "2026-09-28",
       "week_end": "2026-10-04",
       "expected_counts": {
-        "observation": 1,
+        "observation": 2,
         "issue": 2,
         "action": 1
       }

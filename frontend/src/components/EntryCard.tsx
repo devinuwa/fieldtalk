@@ -207,7 +207,7 @@ export function EntryCard({ entry }: { entry: StoredEntry }) {
           type="button"
           onClick={() => void save()}
           disabled={!dirty || saving}
-          className="rounded-lg bg-leaf px-3 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-lg bg-leaf px-3 py-2 text-sm font-semibold text-on-accent disabled:opacity-40"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>
@@ -224,7 +224,7 @@ export function EntryCard({ entry }: { entry: StoredEntry }) {
             <button
               type="button"
               onClick={() => void deleteEntry(entry.id)}
-              className="rounded-lg bg-alert px-3 py-2 text-sm font-semibold text-white"
+              className="rounded-lg bg-alert px-3 py-2 text-sm font-semibold text-on-accent"
             >
               Really delete
             </button>

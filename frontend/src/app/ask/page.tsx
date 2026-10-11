@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AskRibbon } from "@/components/AskRibbon";
 import { TracePanel } from "@/components/TracePanel";
@@ -18,12 +18,19 @@ const SUGGESTIONS = [
 ];
 
 export default function AskPage() {
-  const { runAsk, modelUnavailable, entries } = useApp();
+  const { runAsk, modelUnavailable, entries, pendingQuestion, setPendingQuestion } = useApp();
   const [question, setQuestion] = useState("");
   const [stages, setStages] = useState<AskStage[]>([]);
   const [run, setRun] = useState<AskRun | null>(null);
   const [running, setRunning] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  // A question handed over from the record screen ("Ask a question" on a transcript).
+  useEffect(() => {
+    if (pendingQuestion === null) return;
+    setQuestion(pendingQuestion);
+    setPendingQuestion(null);
+  }, [pendingQuestion, setPendingQuestion]);
 
   async function submit(nextQuestion: string) {
     const trimmed = nextQuestion.trim();
@@ -50,12 +57,17 @@ export default function AskPage() {
   }
 
   return (
-    <div>
-      <h2 className="text-xl font-bold">Ask your notes</h2>
-      <p className="mt-1 text-sm text-ink-soft">
-        The model only picks a tool and fills in its arguments. Counts and dates come back from the
-        engine over your stored entries.
-      </p>
+    <div>        <h2 className="text-xl font-bold">Ask your notes</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          The model only picks a tool and fills in its arguments. Counts and dates come back from the
+          engine over your stored entries.
+        </p>
+        {question !== "" && !running && run === null ? (
+          <p className="mt-2 text-sm text-ink-soft" data-testid="handed-over">
+            The question was carried over from your recording. Ask it as it is, or make it about a
+            plot you stored.
+          </p>
+        ) : null}
 
       <form
         className="mt-3"
@@ -78,7 +90,7 @@ export default function AskPage() {
           <button
             type="submit"
             disabled={running || modelUnavailable}
-            className="rounded-lg bg-leaf px-4 py-2 font-semibold text-white disabled:opacity-50"
+            className="rounded-lg bg-leaf px-4 py-2 font-semibold text-on-accent disabled:opacity-50"
           >
             {running ? "Working…" : "Ask"}
           </button>

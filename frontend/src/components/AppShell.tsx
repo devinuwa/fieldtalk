@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <nav
           aria-label="Sections"
-          className="no-print mt-3 grid grid-cols-4 gap-1 rounded-xl bg-leaf-soft p-1"
+          className="no-print mt-3 grid grid-cols-4 gap-1 rounded-xl border border-slate-line bg-surface p-1"
         >
           {NAV.map((item) => (
             <Link
@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               href={item.href}
               aria-current={current(item.href) ? "page" : undefined}
               className={`rounded-lg px-2 py-2 text-center text-sm font-semibold ${
-                current(item.href) ? "bg-white text-leaf shadow-sm" : "text-ink-soft"
+                current(item.href) ? "bg-leaf/20 text-leaf" : "text-ink-soft hover:text-ink"
               }`}
             >
               {item.label}

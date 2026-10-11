@@ -88,7 +88,7 @@ from fieldtalk.engine import DateExpr, Entry, days_since, open_issues, resolve_d
 
 assert days_since(date(2026, 7, 10), date(2026, 10, 7)) == 89
 assert resolve_date(DateExpr("days_ago", n=2), date(2026, 10, 7)) == date(2026, 10, 5)
-entry = Entry(id="x", plot="plot 1", kind="issue", date=date(2026, 10, 1))
+entry = Entry(id="x", plot="plot 1", crop=None, kind="issue", date=date(2026, 10, 1), text="x")
 assert [e.id for e in open_issues([entry])] == ["x"]
 assert weekly_summary([entry], date(2026, 10, 1)).total_entries == 1
 print("engine imported and ran with third-party imports blocked")

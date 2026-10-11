@@ -48,6 +48,20 @@ def test_resolve_date_accepts_29_february_only_in_a_leap_year() -> None:
     assert resolve_date(DateExpr("month_day", month=2, day=29), date(2027, 3, 1)) is None
 
 
+def test_resolve_date_rejects_out_of_range_days_ago_without_raising() -> None:
+    # Derived by hand: 999,999,999,999 days before 2026-10-07 is roughly 2.7 million
+    # years back — far outside the proleptic Gregorian range Python dates support
+    # (0001-01-01 .. 9999-12-31), so the expression is unresolvable (None).
+    # Regression: this used to raise OverflowError, which surfaced as HTTP 500 upstream.
+    assert resolve_date(DateExpr("days_ago", n=999999999999), RECORDED) is None
+    assert resolve_date(DateExpr("days_ago", n=10**30), RECORDED) is None
+    # A large n that is still representable resolves normally. Derived by hand:
+    # 2026-10-07 minus 27 years (9,862 days: 27*365 + 7 leap days 2000..2024) lands on
+    # 1999-10-07; the remaining 138 days back (Sep 30 + Aug 31 + Jul 31 + Jun 30 = 122,
+    # then 16 more) lands on 1999-05-22.
+    assert resolve_date(DateExpr("days_ago", n=10000), RECORDED) == date(1999, 5, 22)
+
+
 @pytest.mark.parametrize(
     ("planting", "on", "expected"),
     [

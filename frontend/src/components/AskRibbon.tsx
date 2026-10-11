@@ -23,7 +23,7 @@ const TONES: Record<string, string> = {
   refused: "border-alert bg-alert-soft text-alert",
   clarify: "border-plum bg-plum-soft text-plum",
   error: "border-alert bg-alert-soft text-alert",
-  pending: "border-slate-line bg-white text-ink-soft",
+  pending: "border-slate-line bg-surface text-ink-soft",
 };
 
 /**

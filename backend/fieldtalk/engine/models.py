@@ -1,43 +1,25 @@
-"""Data model for the deterministic engine.
-
-Standard library only (AGENTS.md section 3). Nothing in this package imports a
-third-party module; ``tests/test_engine_purity.py`` enforces that.
-"""
+"""Engine data model. Standard library only (AGENTS.md section 3)."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Literal
+from typing import Literal, Tuple
 
-# The closed set of entry kinds. The model may only emit one of these.
+ENTRY_KINDS: Tuple[str, ...] = ("observation", "issue", "action", "plan", "measurement")
+ENTRY_KINDS_STR: Tuple[str, ...] = tuple(ENTRY_KINDS)
 EntryKind = Literal["observation", "issue", "action", "plan", "measurement"]
-
-ENTRY_KINDS: tuple[EntryKind, ...] = (
-    "observation",
-    "issue",
-    "action",
-    "plan",
-    "measurement",
-)
-
-# The date expressions the model is allowed to emit (PLAN.md entry schema).
-DateExprKind = Literal["today", "days_ago", "month_day"]
 
 
 @dataclass(frozen=True)
 class Quantity:
-    """A number the user spoke, with the unit they used."""
-
     value: float
     unit: str
 
 
 @dataclass(frozen=True)
 class DateExpr:
-    """What the model emitted for a date: never a resolved calendar date."""
-
-    kind: DateExprKind
+    kind: Literal["today", "days_ago", "month_day", None] = None
     n: int | None = None
     month: int | None = None
     day: int | None = None
@@ -45,13 +27,11 @@ class DateExpr:
 
 @dataclass(frozen=True)
 class Entry:
-    """A stored entry, with its dates already resolved in code."""
-
     id: str
     plot: str | None
+    crop: str | None
     kind: EntryKind
     date: date
-    crop: str | None = None
     text: str = ""
     planting_date: date | None = None
     quantity: Quantity | None = None
@@ -59,8 +39,6 @@ class Entry:
 
 @dataclass(frozen=True)
 class IssueRef:
-    """An issue as the weekly report and the tools report it."""
-
     id: str
     plot: str
     text: str
@@ -88,7 +66,7 @@ class WeeklySummary:
 
     week_start: date
     week_end: date
-    counts_by_kind: dict[EntryKind, int] = field(default_factory=dict)
+    counts_by_kind: dict[EntryKind, int] = field(default_factory=lambda: {k: 0 for k in ENTRY_KINDS})
     total_entries: int = 0
     plots_touched: tuple[PlotTouch, ...] = ()
     issues_opened: tuple[IssueRef, ...] = ()
