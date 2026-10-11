@@ -9,7 +9,7 @@
 | Author | `devinuwa <inuwamuhammad930@gmail.com>` |
 | Branch | `main` |
 | Files | 77 |
-| Remote | none created, nothing pushed |
+| Remote | `https://github.com/devinuwa/fieldtalk` (`main` pushed 2026-10-11) |
 
 The repository was created inside the challenge window for Hacktoberfest 2026, DEV Week 1
 "Touch Grass". Per AGENTS.md section 4, commits made after **2026-10-12T06:59:00Z** are
@@ -50,8 +50,9 @@ including the two that still need verification, are listed in `THIRD_PARTY.md`.
   email is the one already configured on this machine. If that address is not attached to
   the devinuwa account, the commit will not be attributed to it on GitHub and the author
   email has to be amended before publication.
-* No collaborator was added to any repository, no remote was created, and nothing was
-  pushed. The GitHub token was only read from, never modified.
+* No collaborator was added to the repository. The intended public remote was created after
+  explicit human authorization, configured as `origin`, and pushed to `main`. The GitHub token
+  was only used for the repository creation and push; credentials were not modified.
 
 ## Environment measured while building this
 
